@@ -161,10 +161,7 @@
             
             <div class="glass-card rounded-2xl p-8 mb-6 slide-up">
                 <h3 class="text-lg text-gray-400 mb-2">题目</h3>
-                <p id="question-text" class="text-2xl font-bold mb-4">这里是题目内容</p>
-                <div class="bg-black/30 rounded-xl p-4 mb-4">
-                    <p id="question-hint" class="text-gray-300 italic">提示信息</p>
-                </div>
+                <p id="question-text" class="text-2xl font-bold">这里是题目内容</p>
             </div>
             
             <div class="space-y-3" id="options-container"></div>
@@ -384,7 +381,6 @@ function loadQuestion() {
     document.getElementById("total-questions").textContent = quizData.length;
     document.getElementById("score").textContent = score;
     document.getElementById("question-text").textContent = q.question;
-    document.getElementById("question-hint").textContent = q.hint;
     
     const progress = ((currentQuestionIndex + 1) / quizData.length) * 100;
     document.getElementById("progress-bar").style.width = `${progress}%`;

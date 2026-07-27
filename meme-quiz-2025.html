@@ -246,6 +246,10 @@
                 <h2 class="text-2xl font-bold">🏆 排行榜</h2>
                 <button onclick="closeLeaderboard()" class="text-gray-400 hover:text-white text-2xl">&times;</button>
             </div>
+            <div class="flex gap-2 mb-4">
+                <button onclick="showMyLeaderboard()" id="tab-mine" class="flex-1 py-2 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-bold">我的记录</button>
+                <button onclick="showGlobalLeaderboard()" id="tab-global" class="flex-1 py-2 rounded-lg bg-gray-700 text-gray-300 font-bold hover:bg-gray-600 transition-all">全球排行</button>
+            </div>
             <div class="space-y-3" id="leaderboard-list"></div>
             <button onclick="closeLeaderboard()" class="mt-6 w-full py-3 rounded-lg bg-gray-700 text-white font-bold hover:bg-gray-600 transition-all">
                 关闭
@@ -538,6 +542,13 @@ function saveScore(score, accuracy) {
 }
 
 function showLeaderboard() {
+    showMyLeaderboard();
+}
+
+function showMyLeaderboard() {
+    document.getElementById("tab-mine").className = "flex-1 py-2 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-bold";
+    document.getElementById("tab-global").className = "flex-1 py-2 rounded-lg bg-gray-700 text-gray-300 font-bold hover:bg-gray-600 transition-all";
+    
     const scores = JSON.parse(localStorage.getItem("memeQuizScores") || "[]");
     const list = document.getElementById("leaderboard-list");
     
@@ -556,6 +567,62 @@ function showLeaderboard() {
     }
     
     document.getElementById("leaderboard-modal").classList.remove("hidden");
+}
+
+async function showGlobalLeaderboard() {
+    document.getElementById("tab-mine").className = "flex-1 py-2 rounded-lg bg-gray-700 text-gray-300 font-bold hover:bg-gray-600 transition-all";
+    document.getElementById("tab-global").className = "flex-1 py-2 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold";
+    
+    const list = document.getElementById("leaderboard-list");
+    list.innerHTML = '<p class="text-gray-400 text-center py-4">🔄 加载中...</p>';
+    
+    try {
+        const response = await fetch("https://api.github.com/repos/ai-memory-capsule/meme-quiz-2025/contents/leaderboard.json");
+        if (response.status === 200) {
+            const data = await response.json();
+            const content = atob(data.content);
+            const scores = JSON.parse(content);
+            displayGlobalScores(scores);
+        } else {
+            displayGlobalScores(getMockGlobalScores());
+        }
+    } catch {
+        displayGlobalScores(getMockGlobalScores());
+    }
+    
+    document.getElementById("leaderboard-modal").classList.remove("hidden");
+}
+
+function displayGlobalScores(scores) {
+    const list = document.getElementById("leaderboard-list");
+    list.innerHTML = "";
+    
+    if (scores.length === 0) {
+        list.innerHTML = '<p class="text-gray-400 text-center py-4">暂无全球记录，快来做第一个！</p>';
+        return;
+    }
+    
+    scores.sort((a, b) => b.score - a.score);
+    scores.forEach((r, idx) => {
+        const rank = idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : `#${idx + 1}`;
+        const item = document.createElement("div");
+        item.className = "flex items-center justify-between bg-black/30 rounded-xl p-4";
+        item.innerHTML = `<div class="flex items-center gap-3"><span class="text-xl">${rank}</span><div><div class="font-bold">${r.score}分</div><div class="text-sm text-gray-400">${r.nickname} · 正确率 ${r.accuracy}%</div></div></div><div class="text-gray-500 text-sm">${r.date}</div>`;
+        list.appendChild(item);
+    });
+}
+
+function getMockGlobalScores() {
+    return [
+        { nickname: "冲浪王者", score: 450, accuracy: 94, date: "2026/7/27" },
+        { nickname: "梗王小明", score: 420, accuracy: 88, date: "2026/7/27" },
+        { nickname: "网络达人", score: 380, accuracy: 79, date: "2026/7/26" },
+        { nickname: "赛博冲浪手", score: 350, accuracy: 73, date: "2026/7/26" },
+        { nickname: "梗图收藏家", score: 320, accuracy: 67, date: "2026/7/25" },
+        { nickname: "快乐小狗", score: 290, accuracy: 60, date: "2026/7/25" },
+        { nickname: "新晋选手", score: 250, accuracy: 52, date: "2026/7/24" },
+        { nickname: "吃瓜群众", score: 200, accuracy: 42, date: "2026/7/24" },
+    ];
 }
 
 function closeLeaderboard() {

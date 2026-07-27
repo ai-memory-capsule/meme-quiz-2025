@@ -583,16 +583,9 @@ async function showGlobalLeaderboard() {
     list.innerHTML = '<p class="text-gray-400 text-center py-4">🔄 加载中...</p>';
     
     try {
-        const response = await fetch("https://api.github.com/repos/ai-memory-capsule/meme-quiz-2025/contents/leaderboard.json");
+        const response = await fetch("https://ai-memory-capsule.github.io/meme-quiz-2025/leaderboard.json");
         if (response.status === 200) {
-            const data = await response.json();
-            const binary = atob(data.content);
-            const bytes = new Uint8Array(binary.length);
-            for (let i = 0; i < binary.length; i++) {
-                bytes[i] = binary.charCodeAt(i);
-            }
-            const content = new TextDecoder("utf-8").decode(bytes);
-            const scores = JSON.parse(content);
+            const scores = await response.json();
             displayGlobalScores(scores);
         } else {
             displayGlobalScores(getMockGlobalScores());

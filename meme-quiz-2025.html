@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025年度梗王挑战赛</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url("https://fonts.googleapis.com/css2?family=Zcool+KuaiLe&family=Noto+Sans+SC:wght@400;700&display=swap");
+        
+        body {
+            font-family: "Noto Sans SC", sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+        }
+        
+        .title-font { font-family: "Zcool KuaiLe", cursive; }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .option-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .option-card:hover {
+            transform: translateY(-4px);
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        .option-card.correct {
+            background: rgba(34, 197, 94, 0.3);
+            border-color: #22c55e;
+        }
+        
+        .option-card.wrong {
+            background: rgba(239, 68, 68, 0.3);
+            border-color: #ef4444;
+        }
+        
+        .progress-bar { transition: width 0.5s ease; }
+        
+        .fade-in { animation: fadeIn 0.5s ease; }
+        .slide-up { animation: slideUp 0.4s ease; }
+        
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(139, 92, 246, 0.5); }
+            50% { box-shadow: 0 0 40px rgba(139, 92, 246, 0.8); }
+        }
+        
+        .pulse-glow { animation: pulse-glow 2s infinite; }
+        
+        .gradient-text {
+            background: linear-gradient(90deg, #f472b6, #8b5cf6, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .month-badge {
+            background: linear-gradient(135deg, #f472b6 0%, #8b5cf6 100%);
+        }
+        
+        .score-pop { animation: scorePop 0.5s ease; }
+        @keyframes scorePop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body class="text-white min-h-screen">
+    <div id="start-page" class="min-h-screen flex items-center justify-center p-4">
+        <div class="max-w-2xl w-full text-center">
+            <div class="mb-8">
+                <div class="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center pulse-glow mb-6">
+                    <span class="text-4xl">🎮</span>
+                </div>
+                <h1 class="text-5xl md:text-6xl font-bold title-font gradient-text mb-4">2025梗王挑战赛</h1>
+                <p class="text-xl text-gray-400">全民欢乐版</p>
+            </div>
+            
+            <div class="glass-card rounded-2xl p-8 mb-8 fade-in">
+                <h2 class="text-2xl font-bold mb-6">比赛规则</h2>
+                <div class="space-y-4 text-left text-gray-300">
+                    <div class="flex items-start gap-3">
+                        <span class="text-purple-400 font-bold">📅</span>
+                        <span>共12个月，每月4题，总计48道题目</span>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <span class="text-cyan-400 font-bold">⏱️</span>
+                        <span>总时间8分钟，单题限时20秒</span>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <span class="text-pink-400 font-bold">🎯</span>
+                        <span>答对得10分，答错不扣分</span>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <span class="text-green-400 font-bold">🏆</span>
+                        <span>根据总分获得不同称号</span>
+                    </div>
+                </div>
+            </div>
+            
+            <button onclick="startGame()" class="w-full py-4 px-8 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xl font-bold hover:from-purple-600 hover:to-pink-600 transition-all transform hover:scale-105 shadow-lg shadow-purple-500/30">
+                开始挑战
+            </button>
+            
+            <p class="mt-6 text-gray-500 text-sm">准备好了吗？轻松答题，欢乐挑战！</p>
+        </div>
+    </div>
+    
+    <div id="quiz-page" class="hidden min-h-screen p-4">
+        <div class="max-w-3xl mx-auto">
+            <div class="glass-card rounded-xl p-4 mb-6">
+                <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-4">
+                        <span class="month-badge px-3 py-1 rounded-full text-sm font-bold" id="current-month">1月</span>
+                        <span class="text-gray-400">第 <span id="current-question" class="text-white font-bold">1</span> / <span id="total-questions">48</span> 题</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-yellow-400">⭐</span>
+                        <span id="score" class="text-xl font-bold text-yellow-400">0</span>
+                    </div>
+                </div>
+                <div class="h-2 bg-gray-700 rounded-full overflow-hidden">
+                    <div class="h-full bg-gradient-to-r from-purple-500 to-cyan-500 progress-bar" id="progress-bar" style="width: 0%"></div>
+                </div>
+                <div class="flex justify-between mt-2 text-xs text-gray-500">
+                    <span>进度</span>
+                    <span id="progress-text">0%</span>
+                </div>
+            </div>
+            
+            <div class="flex justify-center items-center gap-8 mb-4">
+                <div class="text-center">
+                    <div class="text-sm text-gray-400 mb-1">总时间</div>
+                    <div class="flex items-center gap-1">
+                        <span class="text-cyan-400">⏱️</span>
+                        <span id="total-time" class="text-2xl font-bold text-cyan-400">8:00</span>
+                    </div>
+                </div>
+                
+                <div class="relative w-16 h-16">
+                    <svg class="w-16 h-16 transform -rotate-90">
+                        <circle cx="32" cy="32" r="28" stroke="rgba(255,255,255,0.1)" stroke-width="4" fill="none"/>
+                        <circle cx="32" cy="32" r="28" stroke="#ef4444" stroke-width="4" fill="none" stroke-linecap="round" id="timer-circle" style="stroke-dasharray: 176; stroke-dashoffset: 0; transition: stroke-dashoffset 0.5s linear"/>
+                    </svg>
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <span id="timer" class="text-xl font-bold text-red-400">20</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="glass-card rounded-2xl p-8 mb-6 slide-up">
+                <h3 class="text-lg text-gray-400 mb-2">题目</h3>
+                <p id="question-text" class="text-2xl font-bold mb-4">这里是题目内容</p>
+                <div class="bg-black/30 rounded-xl p-4 mb-4">
+                    <p id="question-hint" class="text-gray-300 italic">提示信息</p>
+                </div>
+            </div>
+            
+            <div class="space-y-3" id="options-container"></div>
+            
+            <div id="feedback" class="hidden mt-6 glass-card rounded-xl p-4 slide-up">
+                <div class="flex items-start gap-4">
+                    <div id="feedback-icon" class="text-3xl">🎉</div>
+                    <div>
+                        <h4 id="feedback-title" class="text-xl font-bold mb-2"></h4>
+                        <p id="feedback-desc" class="text-gray-300"></p>
+                    </div>
+                </div>
+                <button onclick="nextQuestion()" class="mt-4 w-full py-3 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-bold hover:from-cyan-600 hover:to-blue-600 transition-all">
+                    下一题
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="result-page" class="hidden min-h-screen flex items-center justify-center p-4">
+        <div class="max-w-2xl w-full text-center">
+            <div class="glass-card rounded-2xl p-8 mb-6">
+                <div class="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center mb-6 pulse-glow">
+                    <span id="result-icon" class="text-4xl">🏆</span>
+                </div>
+                
+                <h1 class="text-4xl font-bold title-font gradient-text mb-2">挑战完成！</h1>
+                <p id="result-title" class="text-2xl font-bold text-yellow-400 mb-4">梗王称号</p>
+                
+                <div class="grid grid-cols-3 gap-4 mb-8">
+                    <div class="bg-black/30 rounded-xl p-4">
+                        <div class="text-3xl font-bold text-purple-400" id="final-score">0</div>
+                        <div class="text-gray-400 text-sm">总分</div>
+                    </div>
+                    <div class="bg-black/30 rounded-xl p-4">
+                        <div class="text-3xl font-bold text-green-400" id="correct-count">0</div>
+                        <div class="text-gray-400 text-sm">答对</div>
+                    </div>
+                    <div class="bg-black/30 rounded-xl p-4">
+                        <div class="text-3xl font-bold text-cyan-400" id="accuracy">0%</div>
+                        <div class="text-gray-400 text-sm">正确率</div>
+                    </div>
+                </div>
+                
+                <div class="bg-black/30 rounded-xl p-4 mb-6">
+                    <h3 class="text-lg font-bold mb-3">称号评价</h3>
+                    <p id="result-desc" class="text-gray-300">评价内容</p>
+                </div>
+                
+                <div class="bg-black/30 rounded-xl p-4 mb-6">
+                    <h3 class="text-lg font-bold mb-4">月度表现</h3>
+                    <div class="grid grid-cols-4 gap-2" id="month-stats"></div>
+                </div>
+                
+                <div class="bg-black/30 rounded-xl p-4 mb-6">
+                    <h3 class="text-lg font-bold mb-3">用时统计</h3>
+                    <div class="flex justify-center items-center gap-2">
+                        <span class="text-cyan-400 text-2xl">⏱️</span>
+                        <span id="final-time" class="text-2xl font-bold text-cyan-400">0:00</span>
+                    </div>
+                    <div class="text-gray-400 text-sm mt-2">总用时</div>
+                </div>
+            </div>
+            
+            <div class="flex gap-4">
+                <button onclick="startGame()" class="flex-1 py-4 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold hover:from-purple-600 hover:to-pink-600 transition-all">
+                    再来一局
+                </button>
+                <button onclick="showLeaderboard()" class="flex-1 py-4 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-bold hover:from-cyan-600 hover:to-blue-600 transition-all">
+                    排行榜
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="leaderboard-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
+        <div class="glass-card rounded-2xl p-6 max-w-lg w-full fade-in">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold">🏆 排行榜</h2>
+                <button onclick="closeLeaderboard()" class="text-gray-400 hover:text-white text-2xl">&times;</button>
+            </div>
+            <div class="space-y-3" id="leaderboard-list"></div>
+            <button onclick="closeLeaderboard()" class="mt-6 w-full py-3 rounded-lg bg-gray-700 text-white font-bold hover:bg-gray-600 transition-all">
+                关闭
+            </button>
+        </div>
+    </div>
+    
+    <script>
+const quizData = [
+    { month: "1月", question: "'赛博许愿池'是指什么？", options: ["网络许愿评论区", "游戏道具", "科技产品", "电影场景"], correct: 0, hint: "许愿", desc: "赛博许愿池：指网络上的许愿评论区，网友在这里许愿、倾诉！" },
+    { month: "1月", question: "'天雷滚滚我好怕怕'出自哪部电影？", options: ["《哪吒之魔童闹海》", "《封神》", "《大闹天宫》", "《西游记》"], correct: 0, hint: "哪吒", desc: "《哪吒之魔童闹海》：搭配哪吒抱头蹲防表情包，迅速霸屏！" },
+    { month: "1月", question: "春晚机器人扭秧歌的梗叫什么？", options: ["机器人秧歌", "机械舞", "人工智能", "科技春晚"], correct: 0, hint: "秧歌", desc: "机器人秧歌：宇树科技机器人身着大花袄扭秧歌，成为春晚最大黑马！" },
+    { month: "1月", question: "Cooked Dog meme表达的是什么情绪？", options: ["尴尬无语", "开心快乐", "愤怒生气", "伤心难过"], correct: 0, hint: "尴尬", desc: "尴尬无语：夕阳下狗狗半眯着眼的表情，完美捕捉面对尴尬时的心理状态！" },
+    { month: "2月", question: "'馕言文'是什么风格的文案？", options: ["新疆方言风格", "古风", "幽默搞笑", "文艺抒情"], correct: 0, hint: "馕", desc: "新疆方言风格：用新疆方言倒装句写的搞笑文案！" },
+    { month: "2月", question: "'丝瓜汤文学'主要描写什么？", options: ["家庭沟通的无奈", "美食制作", "田园生活", "爱情故事"], correct: 0, hint: "家庭", desc: "家庭沟通的无奈：揭示当代年轻人在家庭沟通中的挫败感！" },
+    { month: "2月", question: "格莱美史上第一位获得乡村专辑奖的黑人女性是谁？", options: ["Beyoncé", "Taylor Swift", "Adele", "Rihanna"], correct: 0, hint: "震惊表情包", desc: "Beyoncé：震惊表情包出圈！" },
+    { month: "2月", question: "'天元鼎'在电影中象征什么？", options: ["命运的枷锁", "权力的象征", "友情的信物", "财富的宝藏"], correct: 0, hint: "打破", desc: "命运的枷锁：击碎天元鼎象征打破命运束缚！" },
+    { month: "3月", question: "'小明剑魔'是哪类主播？", options: ["游戏主播", "美食主播", "娱乐主播", "知识主播"], correct: 0, hint: "游戏", desc: "游戏主播：咆哮式解说风格走红！" },
+    { month: "3月", question: "'高雅人士'梗源自什么？", options: ["3D企鹅跳舞", "音乐视频", "电影台词", "综艺节目"], correct: 0, hint: "企鹅", desc: "3D企鹅跳舞：三维威廉泰尔企鹅被赋予魔性舞步！" },
+    { month: "3月", question: "'误闯天家'是什么类型的歌曲？", options: ["古风歌曲", "流行歌曲", "摇滚歌曲", "民谣"], correct: 0, hint: "古风", desc: "古风歌曲：戏腔演唱意外翻红！" },
+    { month: "3月", question: "'邪修'梗常用来形容什么？", options: ["离谱但高效的技巧", "坏人", "修仙者", "魔法师"], correct: 0, hint: "离谱", desc: "离谱但高效的技巧：邪修修炼方式被网友引申为离谱但高效的生活技巧！" },
+    { month: "4月", question: "'甲亢哥'是哪位网红？", options: ["IShowSpeed", "MrBeast", "PewDiePie", "Logan Paul"], correct: 0, hint: "表情夸张", desc: "IShowSpeed：美国网红因表情夸张被网友称为'甲亢哥'！" },
+    { month: "4月", question: "'做完你的做你的'出自哪里？", options: ["景德镇鸡排店", "奶茶店", "理发店", "咖啡店"], correct: 0, hint: "鸡排", desc: "景德镇鸡排店：主理人爆火出圈！" },
+    { month: "4月", question: "'技能五子棋'出自哪个节目？", options: ["《喜人奇妙夜2》", "《开心麻花》", "《喜剧之王》", "《欢乐喜剧人》"], correct: 0, hint: "喜人", desc: "《喜人奇妙夜2》：荒诞搞笑的五子棋表演！" },
+    { month: "4月", question: "Italian Brainrot是什么风格？", options: ["荒诞混搭", "优雅古典", "科技未来", "简约清新"], correct: 0, hint: "鲨鱼穿耐克", desc: "荒诞混搭：AI生成的鲨鱼穿耐克鞋等荒诞内容！" },
+    { month: "5月", question: "'外卖三国杀'指的是什么？", options: ["外卖平台价格战", "三国游戏", "美食比赛", "电视剧"], correct: 0, hint: "价格战", desc: "外卖平台价格战：三大外卖平台展开史诗级补贴混战！" },
+    { month: "5月", question: "'情绪价值'常用来评价什么？", options: ["人际关系", "商品价值", "工作效率", "学习成绩"], correct: 0, hint: "情感", desc: "人际关系：衡量人际关系质量的新标准！" },
+    { month: "5月", question: "'F学生是发明家'梗图表达什么？", options: ["学渣的脑洞", "学霸的发明", "老师的创意", "科学家的研究"], correct: 0, hint: "学渣", desc: "学渣的脑洞：梗图展示学渣们的各种'发明创造'！" },
+    { month: "5月", question: "DeepSeek是什么类型的产品？", options: ["AI大模型", "手机", "游戏", "汽车"], correct: 0, hint: "人工智能", desc: "AI大模型：中国自研大语言模型！" },
+    { month: "6月", question: "'散装江苏'指的是什么？", options: ["江苏各城市各自为政", "江苏美食", "江苏方言", "江苏旅游"], correct: 0, hint: "十三太保", desc: "江苏各城市各自为政：苏超火爆出圈！" },
+    { month: "6月", question: "'主理人'通常指什么？", options: ["品牌负责人", "理发师", "厨师", "设计师"], correct: 0, hint: "品牌", desc: "品牌负责人：从潮牌圈扩展到各行各业！" },
+    { month: "6月", question: "AI Vlogs指的是什么？", options: ["AI生成的视频博客", "人工智能比赛", "科技新闻", "机器人直播"], correct: 0, hint: "视频", desc: "AI生成的视频博客：以假乱真的虚拟博主视频！" },
+    { month: "6月", question: "'6-7'手势常用来表达什么？", options: ["庆祝胜利", "数字密码", "时间", "年龄"], correct: 0, hint: "庆祝", desc: "庆祝胜利：源自篮球运动员的庆祝动作！" },
+    { month: "7月", question: "'想你的风别吹了'是什么梗？", options: ["吐槽网红路牌", "天气预报", "歌曲歌词", "旅游宣传"], correct: 0, hint: "路牌", desc: "吐槽网红路牌：网友对全国景区同质化网红路牌的集体吐槽！" },
+    { month: "7月", question: "'Nothing beats a Jet2 holiday'是什么？", options: ["广告语", "歌曲", "电影", "小说"], correct: 0, hint: "广告", desc: "广告语：被网友改编成各种旅行视频！" },
+    { month: "7月", question: "'Crashout'视频主角是谁？", options: ["Justin Bieber", "Kanye West", "Taylor Swift", "Lady Gaga"], correct: 0, hint: "比伯", desc: "Justin Bieber：贾斯汀·比伯的情绪崩溃视频！" },
+    { month: "7月", question: "'敬自己一杯'是什么仪式？", options: ["举杯庆祝", "喝酒比赛", "告别仪式", "欢迎仪式"], correct: 0, hint: "庆祝", desc: "举杯庆祝：分享人生酸甜的举杯仪式！" },
+    { month: "8月", question: "'肯优麦瑞蜜'是什么梗？", options: ["谐音梗", "美食", "品牌", "地名"], correct: 0, hint: "谐音", desc: "谐音梗：KFC+UNIQLO+McDonald's组合起来念'Can you marry me'！" },
+    { month: "8月", question: "'天工Ultra'是什么？", options: ["人形机器人", "手机", "电脑", "汽车"], correct: 0, hint: "机器人", desc: "人形机器人：世界人形机器人运动会短跑冠军！" },
+    { month: "8月", question: "数字'41'引发什么讨论？", options: ["神秘现象", "数学难题", "游戏关卡", "日期"], correct: 0, hint: "神秘", desc: "神秘现象：网络上引发神秘讨论的数字！" },
+    { month: "8月", question: "'JP Salary Woman'是什么？", options: ["日本职场女性视频", "游戏", "电视剧", "品牌"], correct: 0, hint: "日本", desc: "日本职场女性视频：展现日本上班族的真实生活！" },
+    { month: "9月", question: "'哈基米之歌'是什么？", options: ["空耳歌曲", "儿歌", "民谣", "摇滚"], correct: 0, hint: "空耳", desc: "空耳歌曲：被网友AI二创席卷全网！" },
+    { month: "9月", question: "'Crazy Good'是什么意思？", options: ["非常好", "疯狂", "一般", "不好"], correct: 0, hint: "好", desc: "非常好：形容优秀到让人惊讶的状态！" },
+    { month: "9月", question: "'浪浪山小妖怪'是什么？", options: ["动画电影", "游戏", "小说", "歌曲"], correct: 0, hint: "动画", desc: "动画电影：创中国二维动画票房纪录！" },
+    { month: "9月", question: "'Hasan Dog'梗涉及什么争议？", options: ["动物福利", "言论自由", "版权问题", "隐私泄露"], correct: 0, hint: "动物", desc: "动物福利：涉及狗狗的争议性梗图！" },
+    { month: "10月", question: "'Group 7'源自哪个游戏？", options: ["《明日方舟》", "《原神》", "《崩坏：星穹铁道》", "《王者荣耀》"], correct: 0, hint: "鹰角", desc: "《明日方舟》：神秘的'第七组'引发热议！" },
+    { month: "10月", question: "'千百次练习只为这一刻'是什么广告？", options: ["运动品牌", "汽车", "手机", "化妆品"], correct: 0, hint: "运动", desc: "运动品牌：表达对坚持不懈努力的认可！" },
+    { month: "10月", question: "Khaby Lame以什么视频出名？", options: ["演示无用发明", "搞笑短剧", "美妆教程", "游戏直播"], correct: 0, hint: "无用", desc: "演示无用发明：展示各种'无用发明'！" },
+    { month: "10月", question: "'XX基础XX不基础'是什么句式？", options: ["造句热潮", "数学公式", "编程代码", "诗歌"], correct: 0, hint: "造句", desc: "造句热潮：从穿搭博主开始，全网造句！" },
+    { month: "11月", question: "'从从容容游刃有余'是谁的名言？", options: ["王世坚", "孔子", "老子", "孟子"], correct: 0, hint: "议员", desc: "王世坚：台北议员发言被改编成洗脑神曲！" },
+    { month: "11月", question: "'最棒的小羊'是哪个团体的梗？", options: ["TF家族", "时代少年团", "NCT", "EXO"], correct: 0, hint: "养成系", desc: "TF家族：源自练习室名场面！" },
+    { month: "11月", question: "'拼好×'是什么句式？", options: ["方言表达", "数学公式", "编程代码", "英语短语"], correct: 0, hint: "方言", desc: "方言表达：源自方言中的趣味表达！" },
+    { month: "11月", question: "'哪位少爷吸了？'是什么梗？", options: ["南通文旅评论", "美食评论", "游戏评论", "电影评论"], correct: 0, hint: "文旅", desc: "南通文旅评论：因一条极具'人味'的评论涨粉数百万！" },
+    { month: "12月", question: "'爱你老己'是什么意思？", options: ["爱你自己", "爱老年人", "爱老板", "爱老婆"], correct: 0, hint: "自己", desc: "爱你自己：将'自己'亲昵称为'老己'！" },
+    { month: "12月", question: "'村咖'是什么类型的咖啡馆？", options: ["乡村风格", "城市风格", "复古风格", "现代风格"], correct: 0, hint: "乡村", desc: "乡村风格：城市中的乡村风格咖啡馆！" },
+    { month: "12月", question: "'来财'是什么祝福语？", options: ["年终祝福", "生日祝福", "结婚祝福", "节日祝福"], correct: 0, hint: "年终", desc: "年终祝福：成为年终祝福的流行语！" },
+    { month: "12月", question: "'爱你老己'的完整句式是什么？", options: ["赚了钱给老己买夜宵", "老己最棒", "爱老己每一天", "老己加油"], correct: 0, hint: "买夜宵", desc: "赚了钱给老己买夜宵：年度最暖心热梗！" }
+];
+
+let currentQuestionIndex = 0;
+let score = 0;
+let correctCount = 0;
+let timer = 20;
+let timerInterval;
+let totalTime = 480;
+let totalTimeInterval;
+let selectedOption = null;
+let currentCorrectIndex = -1;
+let monthScores = {};
+let startTime = 0;
+
+["1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"].forEach(m => { monthScores[m] = {correct:0,total:0}; });
+
+function startGame() {
+    currentQuestionIndex = 0; score = 0; correctCount = 0; timer = 20; totalTime = 480; selectedOption = null;
+    startTime = Date.now();
+    Object.keys(monthScores).forEach(m => { monthScores[m] = {correct:0,total:0}; });
+    
+    document.getElementById("start-page").classList.add("hidden");
+    document.getElementById("result-page").classList.add("hidden");
+    document.getElementById("quiz-page").classList.remove("hidden");
+    
+    updateTotalTimeDisplay();
+    clearInterval(totalTimeInterval);
+    totalTimeInterval = setInterval(updateTotalTime, 1000);
+    
+    loadQuestion();
+}
+
+function updateTotalTimeDisplay() {
+    const m = Math.floor(totalTime / 60);
+    const s = totalTime % 60;
+    document.getElementById("total-time").textContent = `${m}:${s.toString().padStart(2,"0")}`;
+    if (totalTime <= 60) {
+        document.getElementById("total-time").classList.remove("text-cyan-400");
+        document.getElementById("total-time").classList.add("text-red-400");
+    } else {
+        document.getElementById("total-time").classList.remove("text-red-400");
+        document.getElementById("total-time").classList.add("text-cyan-400");
+    }
+}
+
+function updateTotalTime() {
+    totalTime--;
+    updateTotalTimeDisplay();
+    if (totalTime <= 0) {
+        clearInterval(totalTimeInterval);
+        clearInterval(timerInterval);
+        showResult();
+    }
+}
+
+function shuffleArray(arr) {
+    const shuffled = [...arr];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+}
+
+function loadQuestion() {
+    selectedOption = null;
+    const q = quizData[currentQuestionIndex];
+    
+    const opts = q.options.map((opt, idx) => ({text: opt, originalIndex: idx}));
+    const shuffled = shuffleArray(opts);
+    currentCorrectIndex = shuffled.findIndex(opt => opt.originalIndex === q.correct);
+    
+    document.getElementById("current-month").textContent = q.month;
+    document.getElementById("current-question").textContent = currentQuestionIndex + 1;
+    document.getElementById("total-questions").textContent = quizData.length;
+    document.getElementById("score").textContent = score;
+    document.getElementById("question-text").textContent = q.question;
+    document.getElementById("question-hint").textContent = q.hint;
+    
+    const progress = ((currentQuestionIndex + 1) / quizData.length) * 100;
+    document.getElementById("progress-bar").style.width = `${progress}%`;
+    document.getElementById("progress-text").textContent = `${Math.round(progress)}%`;
+    
+    const container = document.getElementById("options-container");
+    container.innerHTML = "";
+    
+    shuffled.forEach((opt, idx) => {
+        const card = document.createElement("div");
+        card.className = "glass-card rounded-xl p-4 option-card border border-gray-700";
+        card.innerHTML = `<div class="flex items-center gap-4"><div class="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center font-bold text-lg">${String.fromCharCode(65 + idx)}</div><span class="text-lg">${opt.text}</span></div>`;
+        card.onclick = () => selectOption(idx);
+        container.appendChild(card);
+    });
+    
+    document.getElementById("feedback").classList.add("hidden");
+    
+    timer = 20;
+    document.getElementById("timer").textContent = timer;
+    document.getElementById("timer-circle").style.strokeDashoffset = 0;
+    
+    clearInterval(timerInterval);
+    timerInterval = setInterval(updateTimer, 1000);
+}
+
+function updateTimer() {
+    timer--;
+    document.getElementById("timer").textContent = timer;
+    const len = 176;
+    const offset = len - (timer / 20) * len;
+    document.getElementById("timer-circle").style.strokeDashoffset = offset;
+    
+    if (timer <= 0) {
+        clearInterval(timerInterval);
+        handleTimeout();
+    }
+}
+
+function selectOption(idx) {
+    if (selectedOption !== null) return;
+    clearInterval(timerInterval);
+    
+    selectedOption = idx;
+    const q = quizData[currentQuestionIndex];
+    const opts = document.querySelectorAll(".option-card");
+    
+    opts.forEach((opt, i) => {
+        if (i === currentCorrectIndex) opt.classList.add("correct");
+        else if (i === idx && i !== currentCorrectIndex) opt.classList.add("wrong");
+        opt.style.pointerEvents = "none";
+    });
+    
+    if (idx === currentCorrectIndex) {
+        score += 10;
+        correctCount++;
+        monthScores[q.month].correct++;
+        const el = document.getElementById("score");
+        el.classList.add("score-pop");
+        setTimeout(() => el.classList.remove("score-pop"), 500);
+    }
+    
+    monthScores[q.month].total++;
+    showFeedback(idx === currentCorrectIndex, q);
+}
+
+function handleTimeout() {
+    selectedOption = -1;
+    const q = quizData[currentQuestionIndex];
+    const opts = document.querySelectorAll(".option-card");
+    
+    opts.forEach((opt, i) => {
+        if (i === currentCorrectIndex) opt.classList.add("correct");
+        opt.style.pointerEvents = "none";
+    });
+    
+    monthScores[q.month].total++;
+    showFeedback(false, q);
+}
+
+function showFeedback(isCorrect, q) {
+    const fb = document.getElementById("feedback");
+    const icon = document.getElementById("feedback-icon");
+    const title = document.getElementById("feedback-title");
+    const desc = document.getElementById("feedback-desc");
+    
+    if (isCorrect) {
+        icon.textContent = "🎉";
+        title.textContent = "回答正确！";
+        title.className = "text-xl font-bold mb-2 text-green-400";
+    } else {
+        icon.textContent = "😅";
+        title.textContent = "回答错误";
+        title.className = "text-xl font-bold mb-2 text-red-400";
+    }
+    
+    desc.textContent = q.desc;
+    fb.classList.remove("hidden");
+}
+
+function nextQuestion() {
+    currentQuestionIndex++;
+    if (currentQuestionIndex >= quizData.length) showResult();
+    else loadQuestion();
+}
+
+function showResult() {
+    clearInterval(timerInterval);
+    clearInterval(totalTimeInterval);
+    
+    document.getElementById("quiz-page").classList.add("hidden");
+    document.getElementById("result-page").classList.remove("hidden");
+    
+    const accuracy = Math.round((correctCount / quizData.length) * 100);
+    document.getElementById("final-score").textContent = score;
+    document.getElementById("correct-count").textContent = correctCount;
+    document.getElementById("accuracy").textContent = `${accuracy}%`;
+    
+    let title = "", icon = "", desc = "";
+    if (score >= 450) { title = "传说级梗王"; icon = "👑"; desc = "太强了！你是2025年的冲浪王者！"; }
+    else if (score >= 380) { title = "绝世梗师"; icon = "🌟"; desc = "非常出色！你对2025年的网络文化了如指掌！"; }
+    else if (score >= 300) { title = "资深冲浪达人"; icon = "🌊"; desc = "很不错！你紧跟网络潮流！"; }
+    else if (score >= 200) { title = "新晋冲浪选手"; icon = "🏄"; desc = "还可以！你对网络热梗有一定了解！"; }
+    else { title = "网络小白"; icon = "🐣"; desc = "加油！2025年的网络世界很精彩！"; }
+    
+    document.getElementById("result-title").textContent = title;
+    document.getElementById("result-icon").textContent = icon;
+    document.getElementById("result-desc").textContent = desc;
+    
+    const stats = document.getElementById("month-stats");
+    stats.innerHTML = "";
+    
+    Object.entries(monthScores).forEach(([month, s]) => {
+        const acc = s.total > 0 ? Math.round((s.correct / s.total) * 100) : 0;
+        const card = document.createElement("div");
+        card.className = "bg-black/30 rounded-xl p-3 text-center";
+        card.innerHTML = `<div class="text-sm text-gray-400 mb-1">${month}</div><div class="text-lg font-bold ${acc === 100 ? "text-green-400" : acc >= 50 ? "text-yellow-400" : "text-red-400"}">${acc}%</div>`;
+        stats.appendChild(card);
+    });
+    
+    const endTime = Date.now();
+    const elapsedSeconds = Math.round((endTime - startTime) / 1000);
+    const elapsedMinutes = Math.floor(elapsedSeconds / 60);
+    const elapsedSecs = elapsedSeconds % 60;
+    document.getElementById("final-time").textContent = `${elapsedMinutes}:${elapsedSecs.toString().padStart(2, "0")}`;
+    
+    saveScore(score, accuracy);
+}
+
+function saveScore(score, accuracy) {
+    const scores = JSON.parse(localStorage.getItem("memeQuizScores") || "[]");
+    scores.push({ score, accuracy, date: new Date().toLocaleDateString() });
+    if (scores.length > 10) scores.shift();
+    localStorage.setItem("memeQuizScores", JSON.stringify(scores));
+}
+
+function showLeaderboard() {
+    const scores = JSON.parse(localStorage.getItem("memeQuizScores") || "[]");
+    const list = document.getElementById("leaderboard-list");
+    
+    list.innerHTML = "";
+    if (scores.length === 0) {
+        list.innerHTML = '<p class="text-gray-400 text-center py-4">暂无记录，快去挑战吧！</p>';
+    } else {
+        scores.sort((a, b) => b.score - a.score);
+        scores.forEach((r, idx) => {
+            const rank = idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : `#${idx + 1}`;
+            const item = document.createElement("div");
+            item.className = "flex items-center justify-between bg-black/30 rounded-xl p-4";
+            item.innerHTML = `<div class="flex items-center gap-3"><span class="text-xl">${rank}</span><div><div class="font-bold">${r.score}分</div><div class="text-sm text-gray-400">正确率 ${r.accuracy}%</div></div></div><div class="text-gray-500 text-sm">${r.date}</div>`;
+            list.appendChild(item);
+        });
+    }
+    
+    document.getElementById("leaderboard-modal").classList.remove("hidden");
+}
+
+function closeLeaderboard() {
+    document.getElementById("leaderboard-modal").classList.add("hidden");
+}
+    </script>
+</body>
+</html>
